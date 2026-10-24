@@ -225,7 +225,7 @@ java -jar target/smart-library-backend-1.0.0.jar
 
 ## 界面截图
 
-截图文件统一放在 `docs/screenshots/` 目录，按下表命名。文件放入后，删除下方 HTML 注释块首尾的 `<!--` 与 `-->`，图片即会显示。
+截图文件统一放在 `docs/screenshots/` 目录，按下表命名，下方按编号依次展示。演示数据来自 `admin` 管理员账号与一个读者账号，浏览器宽度 1440 px、滚动到页面顶部截取。
 
 | 编号 | 界面 | 路由 | 文件 |
 |---|---|---|---|
@@ -241,23 +241,51 @@ java -jar target/smart-library-backend-1.0.0.jar
 | 10 | 管理后台 | `/admin` | `docs/screenshots/10-admin-dashboard.png` |
 | 11 | 读者管理 | `/users` | `docs/screenshots/11-users.png` |
 
-<!-- 截图占位：文件放入 docs/screenshots/ 后删除本段注释的首尾标记
+### 01 登录页
 
 ![登录页](docs/screenshots/01-login.png)
+
+### 02 学生数据概览
+
 ![学生数据概览](docs/screenshots/02-dashboard.png)
+
+### 03 图书检索
+
 ![图书检索](docs/screenshots/03-books.png)
+
+### 04 图书详情
+
 ![图书详情](docs/screenshots/04-book-detail.png)
+
+### 05 借阅管理
+
 ![借阅管理](docs/screenshots/05-borrow.png)
+
+### 06 座位预约
+
 ![座位预约](docs/screenshots/06-seats.png)
+
+### 07 室内导航
+
 ![室内导航](docs/screenshots/07-navigation.png)
+
+### 08 书单广场
+
 ![书单广场](docs/screenshots/08-book-lists.png)
+
+### 09 学习中心
+
 ![学习中心](docs/screenshots/09-study-center.png)
+
+### 10 管理后台
+
 ![管理后台](docs/screenshots/10-admin-dashboard.png)
+
+### 11 读者管理
+
 ![读者管理](docs/screenshots/11-users.png)
 
--->
-
-建议截图时保持浏览器宽度在 1440 px 左右，隐藏书签栏，页面处于已登录状态并填入真实演示数据，这样在 GitHub 的窄栏布局下仍能看清关键区域。
+以上截图均以 1440 px 浏览器宽度、已登录状态下截取，隐藏书签栏，演示数据来自本地 H2 演示库。
 
 ## 项目结构
 

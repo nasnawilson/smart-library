@@ -225,7 +225,7 @@ The system has exactly two roles, `ADMIN` and `USER`, stored in the `sys_user.ro
 
 ## Screenshots
 
-All screenshot files live in `docs/screenshots/` and follow the names below. Once the files are in place, remove the opening `<!--` and closing `-->` of the HTML comment block further down and the images will render.
+All screenshot files live in `docs/screenshots/` and follow the names below; the gallery further down renders them in order. Demo data comes from the `admin` account plus one reader account, captured at a 1440 px browser width from the top of each page.
 
 | No. | Screen | Route | File |
 |---|---|---|---|
@@ -241,23 +241,51 @@ All screenshot files live in `docs/screenshots/` and follow the names below. Onc
 | 10 | Admin dashboard | `/admin` | `docs/screenshots/10-admin-dashboard.png` |
 | 11 | Reader management | `/users` | `docs/screenshots/11-users.png` |
 
-<!-- Placeholder block: delete the opening and closing comment markers once the files exist
+### 01 Login
 
 ![Login](docs/screenshots/01-login.png)
+
+### 02 Student dashboard
+
 ![Student dashboard](docs/screenshots/02-dashboard.png)
+
+### 03 Catalogue search
+
 ![Catalogue search](docs/screenshots/03-books.png)
+
+### 04 Book detail
+
 ![Book detail](docs/screenshots/04-book-detail.png)
+
+### 05 Borrowing
+
 ![Borrowing](docs/screenshots/05-borrow.png)
+
+### 06 Seat reservation
+
 ![Seat reservation](docs/screenshots/06-seats.png)
+
+### 07 Indoor navigation
+
 ![Indoor navigation](docs/screenshots/07-navigation.png)
+
+### 08 Reading lists
+
 ![Reading lists](docs/screenshots/08-book-lists.png)
+
+### 09 Study centre
+
 ![Study centre](docs/screenshots/09-study-center.png)
+
+### 10 Admin dashboard
+
 ![Admin dashboard](docs/screenshots/10-admin-dashboard.png)
+
+### 11 Reader management
+
 ![Reader management](docs/screenshots/11-users.png)
 
--->
-
-Capture at a browser width of about 1440 px with the bookmarks bar hidden, signed in, and realistic demo data loaded, so the key regions stay legible inside the narrow column layout GitHub uses for README files.
+All screenshots were captured at a 1440 px browser width while signed in, with the bookmarks bar hidden, using the local H2 demo database.
 
 ## Project Structure
 
