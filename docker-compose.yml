@@ -1,0 +1,87 @@
+version: '3.8'
+
+# 智慧图书馆系统 - Docker Compose 一键启动配置
+# 包含三个服务：MySQL 数据库、Spring Boot 后端、Vue 前端
+
+services:
+  # ==========================================
+  # MySQL 8.0 数据库
+  # ==========================================
+  mysql:
+    image: mysql:8.0
+    container_name: smart-library-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: smart_library
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      # 持久化数据
+      - mysql-data:/var/lib/mysql
+      # 自动执行初始化脚本
+      - ./smart-library-backend/src/main/resources/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - smart-library-net
+
+  # ==========================================
+  # Spring Boot 后端
+  # ==========================================
+  backend:
+    build:
+      context: ./smart-library-backend
+      dockerfile: Dockerfile
+    container_name: smart-library-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/smart_library?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+    networks:
+      - smart-library-net
+
+  # ==========================================
+  # Vue 前端
+  # ==========================================
+  frontend:
+    build:
+      context: ./smart-library-frontend
+      dockerfile: Dockerfile
+    container_name: smart-library-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    networks:
+      - smart-library-net
+
+# ==========================================
+# 数据卷 - 持久化 MySQL 数据
+# ==========================================
+volumes:
+  mysql-data:
+    driver: local
+
+# ==========================================
+# 网络 - 三个服务内部通信
+# ==========================================
+networks:
+  smart-library-net:
+    driver: bridge

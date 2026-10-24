@@ -1,0 +1,14 @@
+[Unit]
+Description=Smart Library Backend
+After=network.target mariadb.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/smart-library/backend
+ExecStart=/usr/bin/java -jar /opt/smart-library/backend/smart-library-backend-1.0.0.jar --spring.profiles.active=prod
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target
