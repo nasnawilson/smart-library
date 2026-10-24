@@ -115,7 +115,7 @@
             <el-timeline-item
               v-for="note in notes"
               :key="note.id"
-              :timestamp="note.createTime"
+              :timestamp="formatTime(note.createTime)"
               placement="top"
             >
               <div class="note-item">
@@ -252,6 +252,9 @@ const fetchStats = async () => {
   }
 }
 
+// 后端返回的是 ISO 时间串（2026-10-24T19:47:08.112171），时间线里只展示到分钟
+const formatTime = (value?: string) => (value ? value.replace('T', ' ').slice(0, 16) : '')
+
 const fetchNotes = async () => {
   try {
     const res = await getMyNotes()
@@ -270,60 +273,63 @@ const fetchBooks = async () => {
   }
 }
 
+// 用本地时间拼 YYYY-MM-DD。不用 toISOString()，否则东八区凌晨会把日期算成前一天
+const toDateStr = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
 const fetchTrendData = async () => {
   try {
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - 29)
 
-    const res = await getDailyStats(
-      startDate.toISOString().split('T')[0],
-      endDate.toISOString().split('T')[0]
-    )
+    const res = await getDailyStats(toDateStr(startDate), toDateStr(endDate))
     const data = res.data || []
     readingDays.value = data.length
 
-    // 初始化图表
-    nextTick(() => {
-      if (trendChartRef.value) {
-        trendChart?.dispose()
-        trendChart = echarts.init(trendChartRef.value)
-        const dates: string[] = []
-        const values: number[] = []
+    const dates: string[] = []
+    const values: number[] = []
 
-        for (let i = 29; i >= 0; i--) {
-          const d = new Date()
-          d.setDate(d.getDate() - i)
-          const dateStr = d.toISOString().split('T')[0]
-          dates.push(dateStr.substring(5))
-          const record = data.find((item: any) => item.date === dateStr)
-          values.push(record ? record.totalMinutes : 0)
-        }
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const dateStr = toDateStr(d)
+      dates.push(dateStr.substring(5))
+      const record = data.find((item: any) => item.date === dateStr)
+      values.push(record ? record.totalMinutes : 0)
+    }
 
-        trendChart.setOption({
-          tooltip: { trigger: 'axis' },
-          xAxis: { type: 'category', data: dates, axisLabel: { rotate: 45 } },
-          yAxis: { type: 'value', name: '分钟' },
-          series: [{
-            data: values,
-            type: 'line',
-            smooth: true,
-            areaStyle: {
-              color: {
-                type: 'linear',
-                x: 0, y: 0, x2: 0, y2: 1,
-                colorStops: [
-                  { offset: 0, color: 'rgba(64,158,255,0.3)' },
-                  { offset: 1, color: 'rgba(64,158,255,0.05)' }
-                ]
-              }
-            },
-            itemStyle: { color: '#409eff' }
-          }],
-          grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true }
-        })
-      }
-    })
+    await nextTick()
+    if (!trendChartRef.value) return
+
+    // 图表实例只创建一次：实时刷新时只更新数据。
+    // 以前每次刷新都 dispose + init，折线动画会不断从头重放，看着像一直贴在地板上。
+    if (!trendChart) {
+      trendChart = echarts.init(trendChartRef.value)
+    }
+
+    trendChart.setOption({
+      tooltip: { trigger: 'axis' },
+      xAxis: { type: 'category', data: dates, axisLabel: { rotate: 45 } },
+      yAxis: { type: 'value', name: '分钟' },
+      series: [{
+        data: values,
+        type: 'line',
+        smooth: true,
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(64,158,255,0.3)' },
+              { offset: 1, color: 'rgba(64,158,255,0.05)' }
+            ]
+          }
+        },
+        itemStyle: { color: '#409eff' }
+      }],
+      grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true }
+    }, true)
   } catch (e) {
     // 忽略错误
   }
@@ -346,7 +352,7 @@ const submitRecord = async () => {
   try {
     await recordReading({
       bookId: recordForm.value.bookId,
-      readDate: recordForm.value.readDate.toISOString().split('T')[0],
+      readDate: toDateStr(recordForm.value.readDate),
       durationMinutes: recordForm.value.durationMinutes
     })
     ElMessage.success('打卡成功')

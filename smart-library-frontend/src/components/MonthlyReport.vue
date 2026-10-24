@@ -16,10 +16,16 @@ const props = defineProps<{
 const calendarChartRef = ref<HTMLElement>()
 let calendarChart: echarts.ECharts | null = null
 
+// 用本地时间拼 YYYY-MM-DD，避免 toISOString() 在东八区把（每月 1 日 / 月末）算成前一天
+const toDateStr = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
 const initCalendarChart = async () => {
   if (!calendarChartRef.value) return
 
-  calendarChart = echarts.init(calendarChartRef.value)
+  if (!calendarChart) {
+    calendarChart = echarts.init(calendarChartRef.value)
+  }
 
   // 获取本月数据
   const now = new Date()
@@ -29,10 +35,7 @@ const initCalendarChart = async () => {
   const endDate = new Date(year, month + 1, 0)
 
   try {
-    const res = await getDailyStats(
-      startDate.toISOString().split('T')[0],
-      endDate.toISOString().split('T')[0]
-    )
+    const res = await getDailyStats(toDateStr(startDate), toDateStr(endDate))
     const data = res.data || []
 
     const chartData = data.map((item: any) => [item.date, item.totalMinutes])

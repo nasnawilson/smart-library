@@ -47,8 +47,9 @@ public class ReadingNoteController {
      * 删除笔记
      */
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
-        readingNoteService.removeById(id);
+    public Result<Void> delete(@PathVariable Long id, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        readingNoteService.removeById(id, userId);
         return Result.success();
     }
 

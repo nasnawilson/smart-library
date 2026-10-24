@@ -132,6 +132,34 @@ public class BorrowRecordService extends ServiceImpl<BorrowRecordMapper, BorrowR
         return list(new QueryWrapper<BorrowRecord>().eq("user_id", userId).orderByDesc("borrow_time")).stream().peek(this::fillView).collect(Collectors.toList());
     }
 
+    /**
+     * 最近的借阅记录（带书名、读者、状态），供数据概览页展示
+     */
+    public List<BorrowRecord> getRecentBorrows(int limit) {
+        int size = Math.max(1, Math.min(limit, 50));
+        return list(new QueryWrapper<BorrowRecord>()
+                .orderByDesc("borrow_time")
+                .orderByDesc("id")
+                .last("limit " + size)).stream().peek(this::fillView).collect(Collectors.toList());
+    }
+
+    /**
+     * 统计某天之后每天的借阅量，返回 date(yyyy-MM-dd) -> 数量
+     */
+    public java.util.Map<java.time.LocalDate, Long> countByBorrowDate(java.time.LocalDate startDate) {
+        java.util.Map<java.time.LocalDate, Long> result = new java.util.LinkedHashMap<>();
+        if (startDate == null) {
+            return result;
+        }
+        list(new QueryWrapper<BorrowRecord>().ge("borrow_time", startDate.atStartOfDay())).forEach(r -> {
+            if (r.getBorrowTime() == null) {
+                return;
+            }
+            result.merge(r.getBorrowTime().toLocalDate(), 1L, Long::sum);
+        });
+        return result;
+    }
+
     public void checkOverdue() {
         list(new QueryWrapper<BorrowRecord>().eq("return_flag", 0).lt("due_time", LocalDateTime.now())).forEach(r -> {});
     }

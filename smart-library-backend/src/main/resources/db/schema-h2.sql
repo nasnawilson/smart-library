@@ -64,6 +64,30 @@ CREATE TABLE IF NOT EXISTS book_list (
   book_ids VARCHAR(255)
 );
 
+CREATE TABLE IF NOT EXISTS reading_record (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  book_id BIGINT NOT NULL,
+  read_date DATE NOT NULL,
+  duration_minutes INT NOT NULL DEFAULT 0,
+  create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_reading_record_user ON reading_record (user_id, read_date);
+
+CREATE TABLE IF NOT EXISTS reading_note (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  book_id BIGINT NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  content CLOB,
+  deleted TINYINT NOT NULL DEFAULT 0,
+  create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_reading_note_user ON reading_note (user_id, deleted);
+
 INSERT INTO sys_user (student_id, password, dept, `class`, role)
 SELECT 'admin', 'admin', '系统管理', '管理员', 'ADMIN'
 WHERE NOT EXISTS (SELECT 1 FROM sys_user WHERE student_id = 'admin');
@@ -133,3 +157,42 @@ WHERE NOT EXISTS (SELECT 1 FROM book_list WHERE list_name = '计算机专业核�
 INSERT INTO book_list (list_name, `desc`, book_ids)
 SELECT '文学经典必读', '中外文学经典作品', '4,7,10'
 WHERE NOT EXISTS (SELECT 1 FROM book_list WHERE list_name = '文学经典必读');
+
+-- 演示数据：给演示学生补 6 条「已归还」的历史借阅，分散在最近 6 天，
+-- 让首页「近 7 天借阅趋势」有自然起伏，而不是只有今天一根柱子。
+-- 同一用户 + 同一本书已存在借阅记录时跳过，反复启动不会重复插入。
+INSERT INTO borrow_record (user_id, book_id, borrow_time, due_time, renew_flag, return_flag)
+SELECT u.id, 4, DATEADD('DAY', -6, CURRENT_TIMESTAMP), DATEADD('DAY', 24, CURRENT_TIMESTAMP), 0, 1
+FROM sys_user u
+WHERE u.student_id = '20230010001'
+  AND NOT EXISTS (SELECT 1 FROM borrow_record b WHERE b.user_id = u.id AND b.book_id = 4);
+
+INSERT INTO borrow_record (user_id, book_id, borrow_time, due_time, renew_flag, return_flag)
+SELECT u.id, 7, DATEADD('DAY', -5, CURRENT_TIMESTAMP), DATEADD('DAY', 25, CURRENT_TIMESTAMP), 0, 1
+FROM sys_user u
+WHERE u.student_id = '20230010001'
+  AND NOT EXISTS (SELECT 1 FROM borrow_record b WHERE b.user_id = u.id AND b.book_id = 7);
+
+INSERT INTO borrow_record (user_id, book_id, borrow_time, due_time, renew_flag, return_flag)
+SELECT u.id, 3, DATEADD('DAY', -4, CURRENT_TIMESTAMP), DATEADD('DAY', 26, CURRENT_TIMESTAMP), 0, 1
+FROM sys_user u
+WHERE u.student_id = '20230010001'
+  AND NOT EXISTS (SELECT 1 FROM borrow_record b WHERE b.user_id = u.id AND b.book_id = 3);
+
+INSERT INTO borrow_record (user_id, book_id, borrow_time, due_time, renew_flag, return_flag)
+SELECT u.id, 5, DATEADD('DAY', -3, CURRENT_TIMESTAMP), DATEADD('DAY', 27, CURRENT_TIMESTAMP), 0, 1
+FROM sys_user u
+WHERE u.student_id = '20230010001'
+  AND NOT EXISTS (SELECT 1 FROM borrow_record b WHERE b.user_id = u.id AND b.book_id = 5);
+
+INSERT INTO borrow_record (user_id, book_id, borrow_time, due_time, renew_flag, return_flag)
+SELECT u.id, 8, DATEADD('DAY', -2, CURRENT_TIMESTAMP), DATEADD('DAY', 28, CURRENT_TIMESTAMP), 0, 1
+FROM sys_user u
+WHERE u.student_id = '20230010001'
+  AND NOT EXISTS (SELECT 1 FROM borrow_record b WHERE b.user_id = u.id AND b.book_id = 8);
+
+INSERT INTO borrow_record (user_id, book_id, borrow_time, due_time, renew_flag, return_flag)
+SELECT u.id, 10, DATEADD('DAY', -1, CURRENT_TIMESTAMP), DATEADD('DAY', 29, CURRENT_TIMESTAMP), 0, 1
+FROM sys_user u
+WHERE u.student_id = '20230010001'
+  AND NOT EXISTS (SELECT 1 FROM borrow_record b WHERE b.user_id = u.id AND b.book_id = 10);

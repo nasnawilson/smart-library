@@ -232,8 +232,11 @@ const initCharts = async (trendData: any[], categoryData: any[]) => {
 
 const initTrendChart = (echarts: EChartsModule, trendData: any[]) => {
   if (!trendChartRef.value) return
-  trendChart?.dispose()
-  trendChart = echarts.init(trendChartRef.value)
+  // 只创建一次实例，后续刷新只更新数据。
+  // 以前每 5 秒 dispose + init 一次，折线动画会反复从头播放，看起来像图表一直没画完。
+  if (!trendChart) {
+    trendChart = echarts.init(trendChartRef.value)
+  }
 
   const dates = (trendData || []).map((item: any) => item.date?.substring(5) || '')
   const values = (trendData || []).map((item: any) => item.count || 0)
@@ -287,13 +290,15 @@ const initTrendChart = (echarts: EChartsModule, trendData: any[]) => {
       }
     ],
     grid: { left: '3%', right: '4%', top: '10%', bottom: '3%', containLabel: true }
-  })
+  }, true)
 }
 
 const initCategoryChart = (echarts: EChartsModule, categoryData: any[]) => {
   if (!categoryChartRef.value) return
-  categoryChart?.dispose()
-  categoryChart = echarts.init(categoryChartRef.value)
+  // 同上：饼图实例也复用，避免实时刷新时反复重建
+  if (!categoryChart) {
+    categoryChart = echarts.init(categoryChartRef.value)
+  }
 
   const data = (categoryData || []).map((item: any) => ({
     name: item.category,
